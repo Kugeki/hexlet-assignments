@@ -9,6 +9,12 @@ class Url
 
   def initialize(href)
     @uri = URI(href)
+
+    query = uri.query
+    @params = {} if query.nil?
+
+    @params ||= query.split('&').map { |q| q.split('=') }.to_h
+      .transform_keys(&:to_sym)
   end
 
   extend Forwardable
@@ -16,15 +22,11 @@ class Url
   def_delegator :@uri, :host
 
   def query_params
-    params_str = uri.query
-    return {} if params_str.nil?
-
-    params_str.split('&').map { |q| q.split('=') }.to_h.transform_keys(&:to_sym)
+    @params
   end
 
   def query_param(key, default = nil)
-    params = query_params
-    params.fetch(key, default)
+    @params.fetch(key, default)
   end
 
   include Comparable
